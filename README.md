@@ -1,2 +1,2 @@
 # CFENet
-This code will be in the repository real soon.
+This code will be soon.
