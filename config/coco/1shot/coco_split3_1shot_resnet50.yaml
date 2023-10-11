@@ -1,8 +1,8 @@
 Data:
-  data_root: /root/autodl-tmp/data/MSCOCO2014                      # 数据路径
-  base_data_root: /root/autodl-tmp/data/base_annotation/coco/      # 基础路径
-  train_list: /root/autodl-tmp/my_work/BAM/lists/coco/train.txt                 # 训练集图像集名称
-  val_list: /root/autodl-tmp/my_work/BAM/lists/coco/val.txt                     # 测试集图像名称
+  data_root: ../data/MSCOCO2014                      # 数据路径
+  base_data_root: ../data/base_annotation/coco/      # 基础路径
+  train_list: ../CFENet/lists/coco/train.txt                 # 训练集图像集名称
+  val_list: ../CFENet/lists/coco/val.txt                     # 测试集图像名称
   classes: 2                                         # 二分类，用于掩码计算指标
 
 
