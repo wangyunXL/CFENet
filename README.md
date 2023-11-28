@@ -25,9 +25,9 @@ This repo contains the code for our  [paper]() "*CFENet: Boosting Few-Shot Seman
 
 ### Models
 
-- Download our pre-trained backbones from [here]()(password: ) and put them into the `CFENet/initmodel` directory. 
+- Download our pre-trained backbones from [here](https://pan.baidu.com/s/1IIA52GjxHrsgghpPeDYjvQ?pwd=9njp) (password：9njp) and put them into the `CFENet/initmodel` directory. 
 - Download our trained base learners from [here](https://pan.baidu.com/s/1MACa5yf2dL53pzOwf08D6Q?pwd=y5ob)(password: y5ob) and put them under `initmodel/PSPNet`. 
-- We provide all trained CFENet [models]() of COCO dataset for your convenience. For Pascal dataset, you can directly retrain the models since the traing time is not long. _Backbone: ResNet50 & ResNet101; Dataset: PASCAL-5<sup>i</sup> & COCO-20<sup>i</sup>; Setting: 1-shot & 5-shot_.
+- We provide all trained CFENet [models](https://pan.baidu.com/s/1WPK6EoS2sfnZkWsbb7bIrw?pwd=octe)(password: octe) of COCO dataset for your convenience. For Pascal dataset, you can directly retrain the models since the traing time is not long. _Backbone: ResNet50 & ResNet101; Dataset: PASCAL-5<sup>i</sup> & COCO-20<sup>i</sup>; Setting: 1-shot & 5-shot_.
 
 -Please note that to reproduct the results we reported in our paper, you can just download the corresponding models and run test script. But we still highly recommond you to retrain the model. Please note that the experimental results may vary due to different environments and settings. 
 
@@ -70,7 +70,7 @@ This repo contains the code for our  [paper]() "*CFENet: Boosting Few-Shot Seman
 
 This repository owes its existence to the exceptional contributions of other projects:
 [PFENet](https://github.com/dvlab-research/PFENet)
-[BAM](https://github.com/chunbolang/BAM/tree/main)
+[BAM](https://github.com/chunbolang/BAM)
 [MSANet](https://github.com/AIVResearch/MSANet)
 
 Many thanks for their great work!
