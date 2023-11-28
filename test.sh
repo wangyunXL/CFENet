@@ -1,17 +1,20 @@
 #!/bin/sh
-PARTITION=Segmentation
+PARTITION=Few-shot Semantic Segmentation
 
 GPU_ID=0
-dataset=coco # pascal coco fss
-exp_name=split0
 
-arch=BAM
-net=resnet50 # vgg resnet50
 
-exp_dir=exp/${dataset}/${arch}/${exp_name}/${net} 
+arch=CFENet
+net=resnet50 # resnet50 or resnet101
+dataset=coco # pascal or coco
+split_name=split0
+shot_name = 1   # 1 or 5
+
+exp_dir=exp/${arch}/${dataset}/${shot_name}shot/$split{split_name}/${net}
 snapshot_dir=${exp_dir}/snapshot
 result_dir=${exp_dir}/result
-config=config/${dataset}/${dataset}_${exp_name}_${net}.yaml
+config=config/${dataset}/${shot_name}shot/${dataset}_$split{split_name}_${shot_name}shot_${net}.yaml
+
 mkdir -p ${snapshot_dir} ${result_dir}
 now=$(date +"%Y%m%d_%H%M%S")
 cp test.sh test.py ${config} ${exp_dir}
