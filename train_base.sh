@@ -14,7 +14,7 @@ result_dir=${exp_dir}/result
 config=config/${dataset}/${dataset}_${exp_name}_${net}_base.yaml
 mkdir -p ${snapshot_dir} ${result_dir}
 now=$(date +"%Y%m%d_%H%M%S")
-cp train.sh train.py ${config} ${exp_dir}
+cp train_base.sh train_base.py ${config} ${exp_dir}
 
 echo ${arch}
 echo ${config}
