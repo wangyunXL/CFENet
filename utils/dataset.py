@@ -229,12 +229,9 @@ class SemData(Dataset):
     def __getitem__(self, index):
         name_dict = {}
         label_class = []
-        image_path, label_path = self.data_list[index]
-        # print("image_path: ", image_path)    # image_path:  /root/autodl-tmp/data/MSCOCO2014/train2014/COCO_train2014_000000499693.jpg
-        # print("label_path: ", label_path)    # label_path:  E:/WY/BAM_win\data/MSCOCO2014/annotations/train2014/COCO_train2014_000000499693.png
+        image_path, label_path = self.data_list[index]   
         if self.data_set == "coco":
             name_dict["query_name"] = image_path[-31:-4]
-            # print("image_path[-31:-4]: ", image_path[-31:-4])
         else:
             name_dict["query_name"] = image_path[-15:-4]
         image = cv2.imread(image_path, cv2.IMREAD_COLOR) 
@@ -242,7 +239,7 @@ class SemData(Dataset):
         image = np.float32(image)
         label = cv2.imread(label_path, cv2.IMREAD_GRAYSCALE)
         label_b = cv2.imread(os.path.join(self.base_path, label_path.split('/')[-1]), cv2.IMREAD_GRAYSCALE)
-        # print("label_b.shape", label_b.shape)
+
 
         if image.shape[0] != label.shape[0] or image.shape[1] != label.shape[1]:
             raise (RuntimeError("Query Image & label shape mismatch: " + image_path + " " + label_path + "\n"))          
@@ -253,15 +250,15 @@ class SemData(Dataset):
             label_class.remove(255) 
         new_label_class = []
         for c in label_class:
-            tmp_label = np.zeros_like(label)            # 创建一个新的，尺度和掩码一样的数组
-            target_pix = np.where(label == c)           # 得到掩码中属于遍历类别的像素的位置
-            tmp_label[target_pix[0],target_pix[1]] = 1  # 在新建数组中，将得到的位置赋为1。其余像素为0
+            tmp_label = np.zeros_like(label)       
+            target_pix = np.where(label == c)        
+            tmp_label[target_pix[0],target_pix[1]] = 1 
             if tmp_label.sum() < 2 * 32 * 32:
                 label_class.remove(c)
         for c in label_class:
-            tmp_label = np.zeros_like(label)            # 创建一个新的，尺度和掩码一样的数组
-            target_pix = np.where(label == c)           # 得到掩码中属于遍历类别的像素的位置
-            tmp_label[target_pix[0],target_pix[1]] = 1  # 在新建数组中，将得到的位置赋为1。其余像素为0
+            tmp_label = np.zeros_like(label)     
+            target_pix = np.where(label == c)       
+            tmp_label[target_pix[0],target_pix[1]] = 1 
             if tmp_label.sum() < 2 * 32 * 32:
                 pass
             elif c in self.sub_val_list:
@@ -281,13 +278,6 @@ class SemData(Dataset):
         if target_pix[0].shape[0] > 0:
             label[target_pix[0],target_pix[1]] = 1 
         label[ignore_pix[0],ignore_pix[1]] = 255
-
-        # for cls in range(1,self.num_classes+1):
-        #     select_pix = np.where(label_b_tmp == cls)
-        #     if cls in self.sub_list:
-        #         label_b[select_pix[0],select_pix[1]] = self.sub_list.index(cls) + 1
-        #     else:
-        #         label_b[select_pix[0],select_pix[1]] = 0    
 
         file_class_chosen = self.sub_class_file_list[class_chosen]
         num_file = len(file_class_chosen)
@@ -310,9 +300,7 @@ class SemData(Dataset):
             support_image_p = support_image_path.split("../")[1]
             support_label_p = support_label_path.split("../")[1]
             support_image_path = os.path.join(self.path, support_image_p)
-            support_label_path = os.path.join(self.path, support_label_p)
-            # print("support_image_path: ", support_image_path)    # support_image_path:  E:/WY/BAM_win\data/MSCOCO2014/train2014/COCO_train2014_000000446974.jpg
-            # print("support_label_path: ", support_label_path)    # support_label_path:  E:/WY/BAM_win\data/MSCOCO2014/annotations/train2014/COCO_train2014_000000446974.png
+            support_label_path = os.path.join(self.path, support_label_p)  
             support_idx_list.append(support_idx)
             support_image_path_list.append(support_image_path)
             support_label_path_list.append(support_label_path)
@@ -323,7 +311,6 @@ class SemData(Dataset):
         support_label_list_ori = []
         support_label_list_ori_mask = []
         subcls_list = []
-        # class_chosen:19, sub_list:[6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], self.sub_list.index(class_chosen):13
         if self.mode == 'train':
             subcls_list.append(self.sub_list.index(class_chosen))
         else:
