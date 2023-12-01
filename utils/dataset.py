@@ -16,7 +16,6 @@ from utils.get_weak_anns import transform_anns
 IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm']
 
 
-
 def is_image_file(filename):
     filename_lower = filename.lower()
     return any(filename_lower.endswith(extension) for extension in IMG_EXTENSIONS)
