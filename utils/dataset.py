@@ -182,8 +182,8 @@ class SemData(Dataset):
         self.base_path = os.path.join(self.base_data_root, mode, str(self.split))
 
         # fss_list_root = '../CFENet/lists/{}/fss_list/{}/'.format(self.data_set, mode)
-        # fss_data_list_path = fss_list_root + 'data_list_{}_rectify.txt'.format(self.split)
-        # fss_sub_class_file_list_path = fss_list_root + 'sub_class_file_list_{}_rectify.txt'.format(self.split)
+        # fss_data_list_path = fss_list_root + 'data_list_{}.txt'.format(self.split)
+        # fss_sub_class_file_list_path = fss_list_root + 'sub_class_file_list_{}.txt'.format(self.split)
         fss_list_root = r'../CFENet/lists/{}/fss_list/{}/'.format(self.data_set, mode)
         fss_data_list_path = fss_list_root + 'data_list_{}.txt'.format(self.split)
         fss_sub_class_file_list_path = fss_list_root + 'sub_class_file_list_{}.txt'.format(self.split)
