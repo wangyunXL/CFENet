@@ -122,19 +122,19 @@ class SemData(Dataset):
         self.train_w = args.train_w
 
         if self.data_set == 'pascal':
-            self.class_list = list(range(1, 21))                         # [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+            self.class_list = list(range(1, 21))                  
             if self.split == 3: 
-                self.sub_list = list(range(1, 16))                       # [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
-                self.sub_val_list = list(range(16, 21))                  # [16,17,18,19,20]
+                self.sub_list = list(range(1, 16))              
+                self.sub_val_list = list(range(16, 21))           
             elif self.split == 2:
-                self.sub_list = list(range(1, 11)) + list(range(16, 21)) # [1,2,3,4,5,6,7,8,9,10,16,17,18,19,20]
-                self.sub_val_list = list(range(11, 16))                  # [11,12,13,14,15]
+                self.sub_list = list(range(1, 11)) + list(range(16, 21)) 
+                self.sub_val_list = list(range(11, 16))                
             elif self.split == 1:
-                self.sub_list = list(range(1, 6)) + list(range(11, 21))  # [1,2,3,4,5,11,12,13,14,15,16,17,18,19,20]
-                self.sub_val_list = list(range(6, 11))                   # [6,7,8,9,10]
+                self.sub_list = list(range(1, 6)) + list(range(11, 21)) 
+                self.sub_val_list = list(range(6, 11))                
             elif self.split == 0:
-                self.sub_list = list(range(6, 21))                       # [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
-                self.sub_val_list = list(range(1, 6))                    # [1,2,3,4,5]
+                self.sub_list = list(range(6, 21))                 
+                self.sub_val_list = list(range(1, 6))                
 
         elif self.data_set == 'coco':
             if use_split_coco:
