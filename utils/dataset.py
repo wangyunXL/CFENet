@@ -33,44 +33,43 @@ def make_dataset(split=0, data_root=None, data_list=None, sub_list=None, data_se
     # which means the mask will be downsampled to 1/32 of the original si、e and the valid area should be larger than 2,
     # therefore the area in original size should be accordingly larger than 2 * 32 * 32    
     image_label_list = []  
-    list_read = open(data_list).readlines()                    # 读取数据txt文件
+    list_read = open(data_list).readlines()             
     print("Processing data...".format(sub_list))
     sub_class_file_list = {}
-    for sub_c in sub_list:                                    # 遍历给定的类别集合（pascal: 15或者5， coco:60或者20）
-        sub_class_file_list[sub_c] = []                       # 生成键值为类别的字典
+    for sub_c in sub_list:                                 
+        sub_class_file_list[sub_c] = []                   
 
-    for l_idx in tqdm(range(len(list_read))):                 # 遍历很多张图像和掩码
-        line = list_read[l_idx]                               # 逐行读取txt文件内容
-        line = line.strip()                                   # 移除字符串头尾指定的字符（默认为空格或换行符）或字符序列
-        line_split = line.split(' ')                          # 将图像和对应掩码的路径分开
-        image_name = os.path.join(data_root, line_split[0])   # 生成绝对路径
+    for l_idx in tqdm(range(len(list_read))):             
+        line = list_read[l_idx]                    
+        line = line.strip()                             
+        line_split = line.split(' ')                 
+        image_name = os.path.join(data_root, line_split[0])  
         label_name = os.path.join(data_root, line_split[1])
         label_path = os.path.join(data_root, line_split[1])
-        image_name = line_split[0]   # 生成相对路径
+        image_name = line_split[0] 
         label_name = line_split[1]
         item = ("../data/MSCOCO2014/"+image_name, "../data/MSCOCO2014/"+label_name)
-        # item = (image_name, label_name)
         label = cv2.imread(label_path, cv2.IMREAD_GRAYSCALE)
-        label_class = np.unique(label).tolist()               # 遍历掩码所有类别， 并给出类别索引列表。  这里的掩码是txt文件中每一行读取一张掩码图
+        label_class = np.unique(label).tolist()       
 
         if 0 in label_class:
             label_class.remove(0)
         if 255 in label_class:
-            label_class.remove(255)                           # 移除列表中的0和255
+            label_class.remove(255)      
 
         new_label_class = []     
 
         if filter_intersection:  # filter images containing objects of novel categories during meta-training
-            if set(label_class).issubset(set(sub_list)):            # 滤除新颖类别， 这避免了训练集和测试集中有对象类别交叉的问题。保证了在训练中的对象类别，不会出现在测试中。
-                for c in label_class:   # if语句判断了该张掩码图的全部类别是否都在训练集类别中。即不包含新颖类别
+            if set(label_class).issubset(set(sub_list)):          
+                for c in label_class:   
                     if c in sub_list:
-                        tmp_label = np.zeros_like(label)            # 创建一个新的，尺度和掩码一样的数组
-                        target_pix = np.where(label == c)           # 得到掩码中属于遍历类别的像素的位置
-                        tmp_label[target_pix[0],target_pix[1]] = 1  # 在新建数组中，将得到的位置赋为1。其余像素为0
+                        tmp_label = np.zeros_like(label)        
+                        target_pix = np.where(label == c)      
+                        tmp_label[target_pix[0],target_pix[1]] = 1 
                         if tmp_label.sum() >= 2 * 32 * 32:      
                             new_label_class.append(c)    
         else:
-            for c in label_class:           # 这里的掩码可能既有训练集类别，又有新颖类别
+            for c in label_class:     
                 if c in sub_list:
                     tmp_label = np.zeros_like(label)
                     target_pix = np.where(label == c)
@@ -78,10 +77,9 @@ def make_dataset(split=0, data_root=None, data_list=None, sub_list=None, data_se
                     if tmp_label.sum() >= 2 * 32 * 32:      
                         new_label_class.append(c)    
       
-
         label_class = new_label_class
 
-        if len(label_class) > 0:          # 这里是为了排除，在掩码类别判断阶段，掩码中的训练集对象尺寸过小而被滤除的情况。
+        if len(label_class) > 0:     
             image_label_list.append(item)
             for c in label_class:
                 if c in sub_list:
@@ -119,7 +117,7 @@ class SemData(Dataset):
         self.data_root = args.data_root   
         self.base_data_root = args.base_data_root   
         self.ann_type = ann_type
-        self.path = r"D:\document_writing\VScode_C\pytorch_code\BAM"
+        self.path = r"../CFENet"
         self.train_h = args.train_h
         self.train_w = args.train_w
 
@@ -184,10 +182,10 @@ class SemData(Dataset):
         mode = 'train' if self.mode=='train' else 'val'
         self.base_path = os.path.join(self.base_data_root, mode, str(self.split))
 
-        # fss_list_root = '/root/autodl-tmp/my_work/BAM/lists/{}/fss_list/{}/'.format(self.data_set, mode)
+        # fss_list_root = '../CFENet/lists/{}/fss_list/{}/'.format(self.data_set, mode)
         # fss_data_list_path = fss_list_root + 'data_list_{}_rectify.txt'.format(self.split)
         # fss_sub_class_file_list_path = fss_list_root + 'sub_class_file_list_{}_rectify.txt'.format(self.split)
-        fss_list_root = r'D:\document_writing\VScode_C\pytorch_code\BAM/lists/{}/fss_list/{}/'.format(self.data_set, mode)
+        fss_list_root = r'../CFENet/lists/{}/fss_list/{}/'.format(self.data_set, mode)
         fss_data_list_path = fss_list_root + 'data_list_{}.txt'.format(self.split)
         fss_sub_class_file_list_path = fss_list_root + 'sub_class_file_list_{}.txt'.format(self.split)
 
@@ -320,21 +318,21 @@ class SemData(Dataset):
             support_label_path = support_label_path_list[k] 
             support_image = cv2.imread(support_image_path, cv2.IMREAD_COLOR)      
             support_image = cv2.cvtColor(support_image, cv2.COLOR_BGR2RGB)
-            support_image = np.float32(support_image)                                # 支持集图像
+            support_image = np.float32(support_image)                    
             support_label = cv2.imread(support_label_path, cv2.IMREAD_GRAYSCALE)
             target_pix = np.where(support_label == class_chosen)
             ignore_pix = np.where(support_label == 255)
             support_label[:,:] = 0
-            support_label[target_pix[0],target_pix[1]] = 1                     #二值掩码图
+            support_label[target_pix[0],target_pix[1]] = 1         
             
             support_label, support_label_mask = transform_anns(support_label, self.ann_type)   # mask/bbox
             support_label[ignore_pix[0],ignore_pix[1]] = 255
-            support_label_mask[ignore_pix[0],ignore_pix[1]] = 255         # 包含(0,class_chosen, 255)的掩码图
+            support_label_mask[ignore_pix[0],ignore_pix[1]] = 255       
             if support_image.shape[0] != support_label.shape[0] or support_image.shape[1] != support_label.shape[1]:
                 raise (RuntimeError("Support Image & label shape mismatch: " + support_image_path + " " + support_label_path + "\n"))            
-            support_image_list_ori.append(support_image)               # 支持集图像
-            support_label_list_ori.append(support_label)               # 包含(0,class_chosen, 255)的掩码图
-            support_label_list_ori_mask.append(support_label_mask)     # 包含(0,class_chosen, 255)的掩码图
+            support_image_list_ori.append(support_image)           
+            support_label_list_ori.append(support_label)            
+            support_label_list_ori_mask.append(support_label_mask)    
         assert len(support_label_list_ori) == self.shot and len(support_image_list_ori) == self.shot
 
         raw_image = image.copy()
@@ -359,7 +357,7 @@ class SemData(Dataset):
         # print("label_class: ", label_class)
 
         # Return
-        if self.mode == 'train':             # cls_label.shape:torch.Size([20, 1, 1])
+        if self.mode == 'train':       
             return image, label, label_b, s_x, s_y, subcls_list, name_dict
         elif self.mode == 'val':
             return image, label, label_b, s_x, s_y, subcls_list, raw_label, raw_label_b, name_dict
@@ -429,19 +427,19 @@ class GSemData(Dataset):
         self.ann_type = ann_type
 
         if data_set == 'pascal':
-            self.class_list = list(range(1, 21))                         # [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+            self.class_list = list(range(1, 21))                  
             if self.split == 3: 
-                self.sub_list = list(range(1, 16))                       # [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
-                self.sub_val_list = list(range(16, 21))                  # [16,17,18,19,20]
+                self.sub_list = list(range(1, 16))                    
+                self.sub_val_list = list(range(16, 21))           
             elif self.split == 2:
-                self.sub_list = list(range(1, 11)) + list(range(16, 21)) # [1,2,3,4,5,6,7,8,9,10,16,17,18,19,20]
-                self.sub_val_list = list(range(11, 16))                  # [11,12,13,14,15]
+                self.sub_list = list(range(1, 11)) + list(range(16, 21)) 
+                self.sub_val_list = list(range(11, 16))            
             elif self.split == 1:
-                self.sub_list = list(range(1, 6)) + list(range(11, 21))  # [1,2,3,4,5,11,12,13,14,15,16,17,18,19,20]
-                self.sub_val_list = list(range(6, 11))                   # [6,7,8,9,10]
+                self.sub_list = list(range(1, 6)) + list(range(11, 21)) 
+                self.sub_val_list = list(range(6, 11))          
             elif self.split == 0:
-                self.sub_list = list(range(6, 21))                       # [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
-                self.sub_val_list = list(range(1, 6))                    # [1,2,3,4,5]
+                self.sub_list = list(range(6, 21))                   
+                self.sub_val_list = list(range(1, 6))                
 
         elif data_set == 'coco':
             if use_split_coco:
@@ -512,23 +510,23 @@ class GSemData(Dataset):
         label_class_base = []
         for c in label_class:
             if c in self.sub_val_list:
-                label_class_novel.append(c)          # 查看遍历的掩码中是否有新颖类别，若有将其加入新颖类别列表中
+                label_class_novel.append(c)     
             else:
                 label_class_base.append(c)
 
         # Choose the category of this episode
-        if len(label_class_base) == 0:         # 掩码中只有新颖类别，没有已知类别
+        if len(label_class_base) == 0:      
             class_chosen = random.choice(label_class_novel) # rule out the possibility that the image contains only "background"
         else:
-            class_chosen = random.choice(self.sub_val_list)             # 随机选取测试集类别中的一个类别
+            class_chosen = random.choice(self.sub_val_list)       
 
         # Generate new annotations
-        for cls in range(1,self.num_classes+1):           # （pascal: 遍历1到20， coco：遍历1到80）
+        for cls in range(1,self.num_classes+1):      
             select_pix = np.where(label_t_tmp == cls)
             if cls in self.sub_list:
-                label_t[select_pix[0],select_pix[1]] = self.sub_list.index(cls) + 1    # 训练集类别索引
+                label_t[select_pix[0],select_pix[1]] = self.sub_list.index(cls) + 1  
             elif cls == class_chosen:
-                label_t[select_pix[0],select_pix[1]] = self.num_classes*3/4 + 1        # 61或者16
+                label_t[select_pix[0],select_pix[1]] = self.num_classes*3/4 + 1      
             else:
                 label_t[select_pix[0],select_pix[1]] = 0  
 
@@ -629,19 +627,19 @@ class BaseData(Dataset):
         self.batch_size = batch_size
 
         if data_set == 'pascal':
-            self.class_list = list(range(1, 21))                         # [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+            self.class_list = list(range(1, 21))                       
             if self.split == 3: 
-                self.sub_list = list(range(1, 16))                       # [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
-                self.sub_val_list = list(range(16, 21))                  # [16,17,18,19,20]
+                self.sub_list = list(range(1, 16))                   
+                self.sub_val_list = list(range(16, 21))               
             elif self.split == 2:
-                self.sub_list = list(range(1, 11)) + list(range(16, 21)) # [1,2,3,4,5,6,7,8,9,10,16,17,18,19,20]
-                self.sub_val_list = list(range(11, 16))                  # [11,12,13,14,15]
+                self.sub_list = list(range(1, 11)) + list(range(16, 21)) 
+                self.sub_val_list = list(range(11, 16))             
             elif self.split == 1:
-                self.sub_list = list(range(1, 6)) + list(range(11, 21))  # [1,2,3,4,5,11,12,13,14,15,16,17,18,19,20]
-                self.sub_val_list = list(range(6, 11))                   # [6,7,8,9,10]
+                self.sub_list = list(range(1, 6)) + list(range(11, 21))  
+                self.sub_val_list = list(range(6, 11))               
             elif self.split == 0:
-                self.sub_list = list(range(6, 21))                       # [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
-                self.sub_val_list = list(range(1, 6))                    # [1,2,3,4,5]
+                self.sub_list = list(range(6, 21))                     
+                self.sub_val_list = list(range(1, 6))                
 
         elif data_set == 'coco':
             if use_split_coco:
@@ -707,13 +705,12 @@ class BaseData(Dataset):
             name_list.append(image_path[-31:-4])
         else:
             name_list.append(image_path[-15:-4])
-        # print("image_path:{}, label_path:{}".format(image_path, label_path))
         image = cv2.imread(image_path, cv2.IMREAD_COLOR) 
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  
-        image = np.float32(image)                              # (366, 500, 3)
-        label = cv2.imread(label_path, cv2.IMREAD_GRAYSCALE)   # (366, 500)
+        image = np.float32(image)                        
+        label = cv2.imread(label_path, cv2.IMREAD_GRAYSCALE) 
         label_tmp = label.copy()
-        cls_label = torch.zeros(self.base_classes)           # 16或者61
+        cls_label = torch.zeros(self.base_classes)      
         class_label = np.unique(label).tolist()
         if 0 in class_label:
             class_label.remove(0)
@@ -721,10 +718,10 @@ class BaseData(Dataset):
             class_label.remove(255)
 
 
-        for cls in range(1, self.num_classes+1):      # (1,20)或者(1,80)
-            select_pix = np.where(label_tmp == cls)      # 获取对象像素位置
+        for cls in range(1, self.num_classes+1):    
+            select_pix = np.where(label_tmp == cls)     
             if cls in self.sub_list:
-                label[select_pix[0],select_pix[1]] = self.sub_list.index(cls) + 1       # 将像素值的重新赋值为给定子集的类别索引
+                label[select_pix[0],select_pix[1]] = self.sub_list.index(cls) + 1     
                 if cls in class_label:
                     cls_label[self.sub_list.index(cls)+1] = 1
             else:
@@ -736,11 +733,11 @@ class BaseData(Dataset):
         raw_label = label.copy()
 
         if self.transform is not None:
-            image, label = self.transform(image, label)       # image.shape:  torch.Size([3, 473, 473])，label.shape:  torch.Size([473, 473])
+            image, label = self.transform(image, label)     
 
         # Return
         if self.mode == 'val' and self.batch_size == 1:
-            return image, label, raw_label, cls_label, name_list             # raw_label： (366, 500)
+            return image, label, raw_label, cls_label, name_list        
         else:
             return image, label, cls_label, name_list
       
