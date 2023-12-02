@@ -57,5 +57,5 @@ def get_corr_chanfeat(query_feat, supp_feat_list, mask_list):
         corr_q_feat = query_feat * corr_feat
         corr_q_feat_list.append(corr_q_feat)
 
-    corr_q_feat = torch.cat(corr_q_feat_list, dim=1)         # 将调整后的特征相乘
+    corr_q_feat = torch.cat(corr_q_feat_list, dim=1)      
     return corr_q_feat
