@@ -217,7 +217,7 @@ def resnet50(pretrained=True, **kwargs):
     model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
     if pretrained:
         # model.load_state_dict(model_zoo.load_url(model_urls['resnet50']))
-        model_path = r"D:\document_writing\VScode_C\pytorch_code\BAM/initmodel/backbones/resnet50_v2.pth"
+        model_path = r"../CFENet/initmodel/backbones/resnet50_v2.pth"
         model.load_state_dict(torch.load(model_path), strict=False)
     return model
 
@@ -231,7 +231,7 @@ def resnet101(pretrained=False, **kwargs):
     model = ResNet(Bottleneck, [3, 4, 23, 3], **kwargs)
     if pretrained:
         # model.load_state_dict(model_zoo.load_url(model_urls['resnet101']))
-        model_path = r'D:\document_writing\VScode_C\pytorch_code\BAM/initmodel/backbones/resnet101_v2.pth'
+        model_path = r'../CFENet/initmodel/backbones/resnet101_v2.pth'
         model.load_state_dict(torch.load(model_path), strict=False)
     return model
 
@@ -245,14 +245,8 @@ def resnet152(pretrained=False, **kwargs):
     model = ResNet(Bottleneck, [3, 8, 36, 3], **kwargs)
     if pretrained:
         # model.load_state_dict(model_zoo.load_url(model_urls['resnet152']))
-        model_path = '/root/autodl-tmp/my_work/BAM/initmodel/backbones/resnet152_v2.pth'
+        model_path = '../CFENet/initmodel/backbones/resnet152_v2.pth'
         model.load_state_dict(torch.load(model_path), strict=False)
     return model
 
 
-
-# x = torch.rand((1,3,473,473))
-# model = resnet50(pretrained=True)
-# layer0, layer1, layer2, layer3, layer4 = model(x)
-# print("layer0.shape:{}, layer1.shape:{}, layer2.shape:{}, layer3.shape:{}, layer4.shape:{}, ".
-#     format(layer0.shape, layer1.shape, layer2.shape, layer3.shape, layer4.shape))
