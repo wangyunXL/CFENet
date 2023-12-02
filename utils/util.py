@@ -125,20 +125,16 @@ def Process_label(label):
     return mask
 
 def intersectionAndUnionGPU(output, target, K, ignore_index=255):
-    """
-    torch.histc(input, bins=100, min=0, max=0, out=None) → Tensor->:计算输入数据的直方图，以min和max作为range的边界，
-    将其均分为bins个直条，然后将排序好的数据划分到各个直条中(bins).如果min和max为0则使用输入的最大值和最小值作为边界。
-    """
     # 'K' classes, output and target sizes are N or N * L or N * H * W, each value in range 0 to K - 1.
     assert (output.dim() in [1, 2, 3])
     assert output.shape == target.shape
-    output = output.view(-1)                       # bs*H*W， output中应该没有255像素值
-    target = target.view(-1)                       #           {0,1,255}
-    output[target == ignore_index] = ignore_index  # 保证了target中属于边缘或者填充的像素位置，在output中同样是255
-    intersection = output[output == target]         # 这里有可能会有num_class+1个值，0, 1,..., 255。这里intersection输出的是两个图相同像素部分在output中的像素值
-    area_intersection = torch.histc(intersection, bins=K, min=0, max=K-1)  # 统计出output和target相同像素值的部分
-    area_output = torch.histc(output, bins=K, min=0, max=K-1)        # 因为限制了取值范围所以，这里剔除255的像素值。
-    area_target = torch.histc(target, bins=K, min=0, max=K-1)        # torch.size(2), 直接统计出像素值为1的像素个数
+    output = output.view(-1)               
+    target = target.view(-1)            
+    output[target == ignore_index] = ignore_index 
+    intersection = output[output == target]       
+    area_intersection = torch.histc(intersection, bins=K, min=0, max=K-1) 
+    area_output = torch.histc(output, bins=K, min=0, max=K-1)      
+    area_target = torch.histc(target, bins=K, min=0, max=K-1)      
     area_union = area_output + area_target - area_intersection
     return area_intersection, area_union, area_target
 
@@ -214,7 +210,7 @@ def colorize(gray, palette):
     color.putpalette(palette)
     return color
 
-def voc_cmap(N=256, normalized=False):     # 256=2^8
+def voc_cmap(N=256, normalized=False):
     def bitget(byteval, idx):
         return ((byteval & (1 << idx)) != 0)
 
@@ -224,13 +220,13 @@ def voc_cmap(N=256, normalized=False):     # 256=2^8
         r = g = b = 0
         c = i
         for j in range(8):
-            r = r | (bitget(c, 0) << 7-j)          # | 位运算符：或。
+            r = r | (bitget(c, 0) << 7-j)     
             g = g | (bitget(c, 1) << 7-j)
             b = b | (bitget(c, 2) << 7-j)
-            c = c >> 3       #  右移动运算符：把">>"左边的运算数的各二进位全部右移若干位，>> 右边的数字指定了移动的位数
+            c = c >> 3    
 
 
-        cmap[i] = np.array([r, g, b])              # cmap8个为一个循环，每个循环的内容相同
+        cmap[i] = np.array([r, g, b])            
 
     cmap = cmap/255 if normalized else cmap
     return cmap
@@ -241,8 +237,8 @@ def get_model_para_number(model):
     total_number = 0
     learnable_number = 0 
     for para in model.parameters():
-        total_number += torch.numel(para)        # torch.numel：返回元素数目
-        if para.requires_grad == True:           # 判断参数是否需要更新
+        total_number += torch.numel(para)     
+        if para.requires_grad == True:        
             learnable_number+= torch.numel(para)
     return total_number, learnable_number
 
@@ -269,28 +265,28 @@ def get_logger():
 
 def get_save_path(args):
     backbone_str = 'resnet'+str(args.layers)
-    args.snapshot_path = os.path.join("/root/autodl-tmp/my_work/BAM", 'train_model/{}/{}/{}/split{}/{}/snapshot'
+    args.snapshot_path = os.path.join("../CFENet", 'train_model/{}/{}/{}/split{}/{}/snapshot'
     .format(args.arch, args.data_set, args.shot, args.split, backbone_str))
-    args.result_path = os.path.join("/root/autodl-tmp/my_work/BAM", 'train_model/{}/{}/{}/split{}/{}/result'
+    args.result_path = os.path.join("../CFENet", 'train_model/{}/{}/{}/split{}/{}/result'
     .format(args.arch, args.data_set, args.shot, args.split, backbone_str))
     print("snapshot_path: ", args.snapshot_path)
     print("result_path: ", args.result_path)
 
 def get_train_val_set(args):
     if args.data_set == 'pascal':
-        class_list = list(range(1, 21)) #[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+        class_list = list(range(1, 21)) 
         if args.split == 3: 
-            sub_list = list(range(1, 16)) #[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
-            sub_val_list = list(range(16, 21)) #[16,17,18,19,20]
+            sub_list = list(range(1, 16)) 
+            sub_val_list = list(range(16, 21))
         elif args.split == 2:
-            sub_list = list(range(1, 11)) + list(range(16, 21)) #[1,2,3,4,5,6,7,8,9,10,16,17,18,19,20]
-            sub_val_list = list(range(11, 16)) #[11,12,13,14,15]
+            sub_list = list(range(1, 11)) + list(range(16, 21)) 
+            sub_val_list = list(range(11, 16)) 
         elif args.split == 1:
-            sub_list = list(range(1, 6)) + list(range(11, 21)) #[1,2,3,4,5,11,12,13,14,15,16,17,18,19,20]
-            sub_val_list = list(range(6, 11)) #[6,7,8,9,10]
+            sub_list = list(range(1, 6)) + list(range(11, 21)) 
+            sub_val_list = list(range(6, 11))
         elif args.split == 0:
-            sub_list = list(range(6, 21)) #[6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
-            sub_val_list = list(range(1, 6)) #[1,2,3,4,5]
+            sub_list = list(range(6, 21))
+            sub_val_list = list(range(1, 6))
 
     elif args.data_set == 'coco':
         if args.use_split_coco:
@@ -352,7 +348,7 @@ def sum_list(list):
         sum += item
     return sum
 
-def show_cam_on_image(img, mask, save_root, cls_list, cat_idx, query_name, training):       # torch.Size([3, 473, 473]), torch.Size([1, 473, 473])
+def show_cam_on_image(img, mask, save_root, cls_list, cat_idx, query_name, training):     
     for i in range(img.shape[0]):
 
         cls = cls_list[cat_idx[i]]
@@ -360,7 +356,7 @@ def show_cam_on_image(img, mask, save_root, cls_list, cat_idx, query_name, train
             save_path = os.path.join(save_root, "train", "class_{}_{}.png".format(cls, query_name[i]))
         else:
             save_path = os.path.join(save_root, "val", "class_{}_{}.png".format(cls, query_name[i]))
-        check_makedirs(save_path)                 # save_path:  /root/autodl-tmp/my_work/BAM/result/CAM/train/class_13_2009_001013.png
+        check_makedirs(save_path)                
 
         image = img[i]
         mask = mask[i]        # img.shape:torch.Size([3, 473, 473]), mask.shape:(473, 473)
@@ -368,11 +364,11 @@ def show_cam_on_image(img, mask, save_root, cls_list, cat_idx, query_name, train
         print(mask.shape)
         print(factor)
 
-        img_flatten = image.flatten(1)              # img_flatten:torch.Size([3, 223729])
-        img_min = torch.min(img_flatten, dim=1)[0].unsqueeze(-1).unsqueeze(-1)    # img_min:torch.Size([3, 1, 1])
+        img_flatten = image.flatten(1)           
+        img_min = torch.min(img_flatten, dim=1)[0].unsqueeze(-1).unsqueeze(-1)   
         img_max = torch.max(img_flatten, dim=1)[0].unsqueeze(-1).unsqueeze(-1)
         image = (image - img_min) / (img_max - img_min)
-        image = image.permute(1,2,0)                   # image.shape:  torch.Size([473, 473, 3])
+        image = image.permute(1,2,0)              
         image = image.detach().cpu().numpy()
 
         image = np.float32(image) * 255.
@@ -383,27 +379,27 @@ def show_cam_on_image(img, mask, save_root, cls_list, cat_idx, query_name, train
         cam = np.uint8(255 * cam)
         cv2.imwrite(save_path, cam)
 
-def show_cam(img, mask, save_root, cls, query_name, training):       # torch.Size([3, 473, 473]), torch.Size([1, 473, 473])
+def show_cam(img, mask, save_root, cls, query_name, training):    
     mask = mask.cpu().numpy()
 
     for i in range(mask.shape[0]):          
-        label = mask[i]             # img.shape:torch.Size([3, 473, 473]), label.shape:(473, 473)
+        label = mask[i]           
         image = img.detach().cpu()
 
         if training == True: 
             save_path = os.path.join(save_root, "train/{}".format(query_name))
         else:
             save_path = os.path.join(save_root, "val/{}".format(query_name))
-        check_makedirs(save_path)                 # save_path:  /root/autodl-tmp/my_work/BAM/result/CAM/train/2009_001809/class_20_2009_001809.png
+        check_makedirs(save_path)               
         save_path = os.path.join(save_path, "class_{}_{}.png".format(query_name, cls, query_name))
 
         # print("save_path: ", save_path)
 
-        img_flatten = image.flatten(1)              # img_flatten:torch.Size([3, 223729])
-        img_min = torch.min(img_flatten, dim=1)[0].unsqueeze(-1).unsqueeze(-1)    # img_min:torch.Size([3, 1, 1])
+        img_flatten = image.flatten(1)             
+        img_min = torch.min(img_flatten, dim=1)[0].unsqueeze(-1).unsqueeze(-1)   
         img_max = torch.max(img_flatten, dim=1)[0].unsqueeze(-1).unsqueeze(-1)
         image = (image - img_min) / (img_max - img_min)
-        image = image.permute(1,2,0).numpy()                   # image.shape:  torch.Size([473, 473, 3])
+        image = image.permute(1,2,0).numpy()              
 
         heatmap = cv2.applyColorMap(np.uint8(255 * label), cv2.COLORMAP_JET)
         heatmap = np.float32(heatmap) / 255
