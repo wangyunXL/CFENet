@@ -59,6 +59,20 @@ This repo contains the code for our  [paper](https://ieeexplore.ieee.org/documen
   sh test.sh
   ```
 
+### Citation
+
+If you find our project is helpful, please feel free to leave a star and cite our paper:
+```
+@ARTICLE{10336516,
+  author={Wang, Yun and Zhu, Lu and Liu, Yuanyuan},
+  journal={IEEE Transactions on Multimedia}, 
+  title={CFENet: Boosting Few-Shot Semantic Segmentation with Complementary Feature-Enhanced Network}, 
+  year={2023},
+  volume={},
+  number={},
+  pages={1-12},
+  doi={10.1109/TMM.2023.3338088}}
+```
 
 ### To-Do List
 
