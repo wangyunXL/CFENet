@@ -259,7 +259,8 @@ class OneModel(nn.Module):
         self.ASPP_meta = ASPP(reduce_dim)
         self.ASPP1 = ASPP(reduce_dim)
         self.mhsa = MHSA(n_dims=reduce_dim, height=args.down_h, width=args.down_w, heads=4)
-        if self.dataset == "pascal" and self.shot == 1:
+        if self.dataset == "pascal" and self.shot == 1: 
+            # Due to the limitation of few samples, reducing the number of model parameters can enhance the robustness of our model
             self.res1_meta = nn.Sequential(      
                 nn.Conv2d(reduce_dim*11, reduce_dim, kernel_size=1, padding=0, bias=False),
                 nn.ReLU(inplace=True))
@@ -273,7 +274,7 @@ class OneModel(nn.Module):
                 nn.ReLU(inplace=True),
                 nn.Dropout2d(p=0.1),
                 nn.Conv2d(reduce_dim, self.classes, kernel_size=1))     
-        else:
+        else: 
             self.res1_meta = nn.Sequential(         
                 nn.Conv2d(reduce_dim*11, reduce_dim*2, kernel_size=1, padding=0, bias=False),
                 nn.ReLU(inplace=True))
