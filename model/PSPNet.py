@@ -110,22 +110,22 @@ class OneModel(nn.Module):
 
 
     def forward(self, x, y):
-        x_size = x.size()                                   # x.shape:  torch.Size([3, 3, 473, 473])
+        x_size = x.size()                     
         h = int((x_size[2] - 1) / 8 * self.zoom_factor + 1)
-        w = int((x_size[3] - 1) / 8 * self.zoom_factor + 1)    # 473
+        w = int((x_size[3] - 1) / 8 * self.zoom_factor + 1)   
 
 
-        x = self.encoder(x)                    # x.shape:  torch.Size([3, 2048, 60, 60])
-        x = self.ppm(x)                        # torch.Size([3, 4096, 60, 60])
-        x = self.cls(x)               # 分类完成后，总共有self.classes个通道数，取16或者61
+        x = self.encoder(x)                
+        x = self.ppm(x)                     
+        x = self.cls(x)           
 
 
         if self.zoom_factor != 1:
-            x = F.interpolate(x, size=(h, w), mode='bilinear', align_corners=True)      # 将最终结果进行上采样
+            x = F.interpolate(x, size=(h, w), mode='bilinear', align_corners=True)  
 
         if self.training:
-            main_loss = self.criterion(x, y.long())           # 在进行损失值计算时，将掩码的像素转为long整型
-            return x.max(1)[1], main_loss                     # 返回的预测掩码图，在通道维度上选出最大通道。 这里因该是选取一个批量中的第2张图
-        else:                   # x.max(1)返回的是最大值值和索引
+            main_loss = self.criterion(x, y.long())      
+            return x.max(1)[1], main_loss            
+        else:                
             return x
 
