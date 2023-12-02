@@ -56,10 +56,10 @@ def get_corr_chanfeat(query_feat, supp_feat_list, mask_list):
         corr_q_feat_list.append(corr_q_feat)
         # corr_attn_list.append(chan_corr_feat)
 
-    # corr_feat = torch.cat(corr_feat_list, dim=1)             # 空间位置加权
-    corr_q_feat = torch.cat(corr_q_feat_list, dim=1)         # 将调整后的特征相乘
+    # corr_feat = torch.cat(corr_feat_list, dim=1)         
+    corr_q_feat = torch.cat(corr_q_feat_list, dim=1)        
     # corr_q_feat = (corr_q_feat * weight_soft).sum(1, True)
-    # corr_attn_feat = torch.cat(corr_attn_list, dim=1)        # 通道加权
+    # corr_attn_feat = torch.cat(corr_attn_list, dim=1)    
 
     # return corr_feat, corr_q_feat, corr_attn_feat
     return corr_q_feat
@@ -71,14 +71,14 @@ def Weighted_GAP(supp_feat, mask):
     supp_pro = F.avg_pool2d(input=supp_feat, kernel_size=supp_feat.shape[-2:]) * feat_h * feat_w / area
     return supp_pro
 
-def get_gram_matrix(fea):        # fea: query_feat_2
+def get_gram_matrix(fea):       
     b, c, h, w = fea.shape        
-    fea = fea.reshape(b, c, h*w)    # C*N
-    fea_T = fea.permute(0, 2, 1)    # N*C        fea_T:(b,h*w,c)
-    fea_norm = fea.norm(2, 2, True)        # https://blog.csdn.net/qq_36556893/article/details/90698186    fea_norm:(b,c,1)
-    fea_T_norm = fea_T.norm(2, 1, True)          # fea_T_norm: (b,1,c)
-    gram = torch.bmm(fea, fea_T)/(torch.bmm(fea_norm, fea_T_norm) + 1e-7)    # C*C      (b,c,c)           将矩阵和自己的转置矩阵做余弦相似度计算
-    return gram                  # 得到的gram所有值都归一化到(0,1)之间，
+    fea = fea.reshape(b, c, h*w)    
+    fea_T = fea.permute(0, 2, 1)    
+    fea_norm = fea.norm(2, 2, True)      
+    fea_T_norm = fea_T.norm(2, 1, True)          
+    gram = torch.bmm(fea, fea_T)/(torch.bmm(fea_norm, fea_T_norm) + 1e-7)   
+    return gram                 
 
 
 class MHSA(nn.Module):
@@ -90,27 +90,27 @@ class MHSA(nn.Module):
         self.key = nn.Conv2d(n_dims, n_dims, kernel_size=1)
         self.value = nn.Conv2d(n_dims, n_dims, kernel_size=1)
 
-        self.rel_h = nn.Parameter(torch.randn([1, heads, n_dims // heads, height, 1 ]), requires_grad=True)  #(1,4,64,1,60)
-        self.rel_w = nn.Parameter(torch.randn([1, heads, n_dims // heads, 1, width]), requires_grad=True)   #(1,4,64,60,1)
+        self.rel_h = nn.Parameter(torch.randn([1, heads, n_dims // heads, height, 1 ]), requires_grad=True) 
+        self.rel_w = nn.Parameter(torch.randn([1, heads, n_dims // heads, 1, width]), requires_grad=True)  
 
         self.softmax = nn.Softmax(dim=-1)
 
     def forward(self, x):
         n_batch, C, height, width = x.size()
-        q = self.query(x).view(n_batch, self.heads, C // self.heads, -1)       # (B,4,64,60*60)      q.shape:torch.Size([24, 4, 64, 3600])
-        k = self.key(x).view(n_batch, self.heads, C // self.heads, -1)             # k.shape:torch.Size([24, 4, 64, 3600])
-        v = self.value(x).view(n_batch, self.heads, C // self.heads, -1)           # v.shape:torch.Size([24, 4, 64, 3600])
+        q = self.query(x).view(n_batch, self.heads, C // self.heads, -1)    
+        k = self.key(x).view(n_batch, self.heads, C // self.heads, -1)          
+        v = self.value(x).view(n_batch, self.heads, C // self.heads, -1)        
 
 
-        content_content = torch.matmul(q.permute(0, 1, 3, 2), k)       # (B,4,60*60,60*60)
+        content_content = torch.matmul(q.permute(0, 1, 3, 2), k)     
 
-        content_position = (self.rel_h + self.rel_w).view(1, self.heads, C // self.heads, -1).permute(0, 1, 3, 2)  # (1,4,60*60,64)  content_position:  torch.Size([1, 4, 3600, 64])
+        content_position = (self.rel_h + self.rel_w).view(1, self.heads, C // self.heads, -1).permute(0, 1, 3, 2)  
         content_position = torch.matmul(content_position, q)      
 
         energy = content_content + content_position
         attention = self.softmax(energy)
 
-        out = torch.matmul(v, attention.permute(0, 1, 3, 2))       # (B,4,64,60*60)
+        out = torch.matmul(v, attention.permute(0, 1, 3, 2))    
         out = out.view(n_batch, -1, height, width)
 
         return out
@@ -140,9 +140,9 @@ class Correlation:
             corrI=corrI.reshape((corrI.shape[0],corrI.shape[1],queryShape[-2],queryShape[-1]))#b,1,h,w
             corrs.append(corrI)#n,b,1,h,w
 
-        corr_l4 = torch.cat(corrs[-stack_ids[0]:],dim=1).contiguous()#b,n,h,w       torch.Size([10, 3, 60, 60])
-        corr_l3 = torch.cat(corrs[-stack_ids[1]:-stack_ids[0]],dim=1).contiguous()   # torch.Size([12, 6, 60, 60])
-        corr_l2 = torch.cat(corrs[-stack_ids[2]:-stack_ids[1]],dim=1).contiguous()   # torch.Size([12, 4, 60, 60])
+        corr_l4 = torch.cat(corrs[-stack_ids[0]:],dim=1).contiguous()#b,n,h,w    
+        corr_l3 = torch.cat(corrs[-stack_ids[1]:-stack_ids[0]],dim=1).contiguous()   
+        corr_l2 = torch.cat(corrs[-stack_ids[2]:-stack_ids[1]],dim=1).contiguous()  
 
 
         return [corr_l4, corr_l3, corr_l2] #,[sup_l4,sup_l3,sup_l2]
@@ -236,7 +236,7 @@ class OneModel(nn.Module):
     
         PSPNet_ = PSPNet(args)
         backbone_str = 'vgg' if args.vgg else 'resnet' + str(args.layers)
-        weight_path = r'/root/autodl-tmp/my_work/BAM/base_train_model/PSPNet/{}/split{}/{}/snapshot/best.pth'.format(args.data_set, args.split, backbone_str)
+        weight_path = r'../CFENet/base_train_model/PSPNet/{}/split{}/{}/snapshot/best.pth'.format(args.data_set, args.split, backbone_str)
         new_param = torch.load(weight_path, map_location=torch.device('cpu'))['state_dict']
         try:
             PSPNet_.load_state_dict(new_param)
@@ -276,24 +276,24 @@ class OneModel(nn.Module):
 
         # Meta Learner
         reduce_dim = 256
-        self.low_fea_id = args.low_fea[-1]       # "layer2"中的2
+        self.low_fea_id = args.low_fea[-1]     
         if self.vgg:
             fea_dim = 512 + 256
         else:
             fea_dim = 1024 + 512              
-        self.down_query = nn.Sequential(           # 1x1卷积
+        self.down_query = nn.Sequential(     
             nn.Conv2d(fea_dim, reduce_dim, kernel_size=1, padding=0, bias=False),
             nn.ReLU(inplace=True),
             nn.Dropout2d(p=0.5))
-        self.down_supp = nn.Sequential(           # 1x1卷积
+        self.down_supp = nn.Sequential(    
             nn.Conv2d(fea_dim, reduce_dim, kernel_size=1, padding=0, bias=False),
             nn.ReLU(inplace=True),
             nn.Dropout2d(p=0.5))
         self.attn = channel_attn(in_dim=self.shot*reduce_dim, out_dim=reduce_dim)
-        self.init_merge1 = nn.Sequential(         # 1x1卷积
+        self.init_merge1 = nn.Sequential(     
             nn.Conv2d(reduce_dim*2+1, reduce_dim, kernel_size=1, padding=0, bias=False),
             nn.ReLU(inplace=True))
-        self.init_merge2 = nn.Sequential(         # 1x1卷积
+        self.init_merge2 = nn.Sequential(      
             nn.Conv2d(reduce_dim*3+64, reduce_dim, kernel_size=1, padding=0, bias=False),
             nn.ReLU(inplace=True))
         self.supp_attention = Attention(in_channels=reduce_dim)
@@ -305,19 +305,19 @@ class OneModel(nn.Module):
         self.ASPP_meta = ASPP(reduce_dim)
         self.ASPP1 = ASPP(reduce_dim)
         self.mhsa = MHSA(n_dims=reduce_dim, height=args.down_h, width=args.down_w, heads=4)
-        self.res1_meta = nn.Sequential(          # 1x1卷积
+        self.res1_meta = nn.Sequential(      
             nn.Conv2d(reduce_dim*11, reduce_dim*2, kernel_size=1, padding=0, bias=False),
             nn.ReLU(inplace=True))
-        self.res2_meta = nn.Sequential(          # 3x3卷积不改变尺度
+        self.res2_meta = nn.Sequential(     
             nn.Conv2d(reduce_dim*2, reduce_dim*2, kernel_size=3, padding=1, bias=False),
             nn.ReLU(inplace=True),   
             nn.Conv2d(reduce_dim*2, reduce_dim*2, kernel_size=3, padding=1, bias=False),
             nn.ReLU(inplace=True))
-        self.cls_meta = nn.Sequential(           # 3x3卷积不改变尺度
+        self.cls_meta = nn.Sequential(         
             nn.Conv2d(reduce_dim*2, reduce_dim, kernel_size=3, padding=1, bias=False),
             nn.ReLU(inplace=True),
             nn.Dropout2d(p=0.1),
-            nn.Conv2d(reduce_dim, self.classes, kernel_size=1))        # 1x1卷积分类
+            nn.Conv2d(reduce_dim, self.classes, kernel_size=1))    
 
         # Gram and Meta
         self.gram_merge = nn.Conv2d(2, 1, kernel_size=1, bias=False)
@@ -329,9 +329,9 @@ class OneModel(nn.Module):
         
         # K-Shot Reweighting
         if args.shot > 1:
-            self.kshot_trans_dim = args.kshot_trans_dim          # 2
-            if self.kshot_trans_dim == 0:      # self.kshot_trans_dim=2
-                self.kshot_rw = nn.Conv2d(self.shot, self.shot, kernel_size=1, bias=False)     # self.kshot_rw.weight: shot*shot*1*1
+            self.kshot_trans_dim = args.kshot_trans_dim    
+            if self.kshot_trans_dim == 0:    
+                self.kshot_rw = nn.Conv2d(self.shot, self.shot, kernel_size=1, bias=False)   
                 self.kshot_rw.weight = nn.Parameter(torch.ones_like(self.kshot_rw.weight) / args.shot)
             else:
                 self.kshot_rw = nn.Sequential(
@@ -359,7 +359,7 @@ class OneModel(nn.Module):
                 {'params': model.cls_meta.parameters()},
                 {'params': model.gram_merge.parameters()},
                 {'params': model.cls_merge.parameters()},
-                {'params': model.kshot_rw.parameters()},         # 5-shot时多了二次权重训练参数
+                {'params': model.kshot_rw.parameters()},       
                 ], lr=LR, momentum=args.momentum, weight_decay=args.weight_decay)
         else:
             optimizer = torch.optim.SGD(
@@ -403,25 +403,25 @@ class OneModel(nn.Module):
         cosine_eps = 1e-7
         for i, tmp_supp_feat in enumerate(supp_feat_list):
             
-            q = query_feat                                    # torch.Size([4, 2048, 60, 60])
+            q = query_feat                         
             s = tmp_supp_feat
             bsize, ch_sz, sp_sz, _ = q.size()[:]
 
             tmp_query = q
-            tmp_query = tmp_query.reshape(bsize, ch_sz, -1)          # torch.Size([4, 2048, 3600])
-            tmp_query_norm = torch.norm(tmp_query, 2, 1, True)       # torch.Size([4, 1, 3600])
+            tmp_query = tmp_query.reshape(bsize, ch_sz, -1)       
+            tmp_query_norm = torch.norm(tmp_query, 2, 1, True)     
 
             tmp_supp = s               
-            tmp_supp = tmp_supp.reshape(bsize, ch_sz, -1)            # torch.Size([4, 2048, 3600])
+            tmp_supp = tmp_supp.reshape(bsize, ch_sz, -1)         
             tmp_supp = tmp_supp.permute(0, 2, 1)
             tmp_supp_norm = torch.norm(tmp_supp, 2, 2, True) 
 
-            similarity = torch.bmm(tmp_supp, tmp_query)/(torch.bmm(tmp_supp_norm, tmp_query_norm) + cosine_eps)   # 计算余弦相似度值: torch.Size([4, 3600, 3600])
-            similarity = similarity.max(1)[0].reshape(bsize, sp_sz*sp_sz)           # 取最大的余弦相似度值，并reshape为：(b,h*w)
-            similarity = (similarity - similarity.min(1)[0].unsqueeze(1))/(similarity.max(1)[0].unsqueeze(1) - similarity.min(1)[0].unsqueeze(1) + cosine_eps)  # min-max归一化（归一化到(0,1)之间）
-            corr_query = similarity.reshape(bsize, 1, sp_sz, sp_sz)         # 生成先验掩码图
-            corr_query_mask_list.append(corr_query)                      #  pascal:    corr_query:（bsize, 1, 60, 60）
-        corr_query_mask = torch.cat(corr_query_mask_list, 1)             #  pascal:    corr_query:（bsize, shot, 60, 60）
+            similarity = torch.bmm(tmp_supp, tmp_query)/(torch.bmm(tmp_supp_norm, tmp_query_norm) + cosine_eps)  
+            similarity = similarity.max(1)[0].reshape(bsize, sp_sz*sp_sz)          
+            similarity = (similarity - similarity.min(1)[0].unsqueeze(1))/(similarity.max(1)[0].unsqueeze(1) - similarity.min(1)[0].unsqueeze(1) + cosine_eps)  
+            corr_query = similarity.reshape(bsize, 1, sp_sz, sp_sz)       
+            corr_query_mask_list.append(corr_query)                    
+        corr_query_mask = torch.cat(corr_query_mask_list, 1)            
         corr_query_mask = (weight_soft * corr_query_mask).sum(1,True)
 
         return corr_query_mask
@@ -466,24 +466,24 @@ class OneModel(nn.Module):
             query_feat = torch.cat([query_backbone_layers[3], query_feat], 1)
         else:
             query_feat = torch.cat([query_backbone_layers[3], query_backbone_layers[2]], 1)
-        query_feat = self.down_query(query_feat)              # 1x1卷积，只改变维度   pascal: torch.Size([B, 256, 60, 60])
+        query_feat = self.down_query(query_feat)            
 
         # Base and Meta
         base_out = self.learner_base(query_backbone_layers[4])
         base_out_soft = base_out.softmax(1)
-        if self.training and self.cls_type == 'Base':           # 将基础预测中的前景和0类别去除，得到图像特征的背景
-            c_id_array = torch.arange(self.base_classes+1, device='cuda')    # 16或者61  （0， base_classes）
+        if self.training and self.cls_type == 'Base':          
+            c_id_array = torch.arange(self.base_classes+1, device='cuda')   
             base_map_list = []
             class_map_list = []
-            for b_id in range(bs):                                        # batch_size
-                c_id = cat_idx[b_id] + 1                                       # 一个批量中的类别索引
+            for b_id in range(bs):                                      
+                c_id = cat_idx[b_id] + 1                                    
                 c_mask = (c_id_array!=0)&(c_id_array!=c_id)
                 non_mask = (c_id_array==0)&(c_id_array==c_id)
                 base_map_list.append(base_out_soft[b_id, c_mask,:,:].unsqueeze(0).sum(1,True))
                 class_map_list.append(base_out_soft[b_id, non_mask,:,:].unsqueeze(0).sum(1,True))
             base_map = torch.cat(base_map_list, 0)    
         else:
-            base_map = base_out_soft[:,1:,:,:].sum(1,True)                     # torch.Size([2, 1, 81, 81])
+            base_map = base_out_soft[:,1:,:,:].sum(1,True)                  
 
         supp_pro_list = []
         final_supp_list = []
@@ -541,8 +541,8 @@ class OneModel(nn.Module):
         hyper_final = self.hyper_final(hyper_final)
 
         # K-Shot Reweighting
-        que_gram = get_gram_matrix(query_backbone_layers[2])  # [bs, C, C] in (0,1)
-        norm_max = torch.ones_like(que_gram).norm(dim=(1, 2))   # shape: (bs) , norm(1, 2)：在第1个维度上进行2范数运算
+        que_gram = get_gram_matrix(query_backbone_layers[2])  
+        norm_max = torch.ones_like(que_gram).norm(dim=(1, 2))   
         est_val_list = []
         for supp_item in supp_feat2_list:
             supp_gram = get_gram_matrix(supp_item)
@@ -550,12 +550,12 @@ class OneModel(nn.Module):
             est_val_list.append((gram_diff.norm(dim=(1, 2)) / norm_max).reshape(bs, 1, 1, 1))  # norm2    [(bs),(bs)...]
         est_val_total = torch.cat(est_val_list, 1)  # [bs, shot, 1, 1]
         if self.shot > 1:
-            val1, idx1 = est_val_total.sort(1)    # 对每个batch的kshot进行排序
-            val2, idx2 = idx1.sort(1)             # 
-            weight = self.kshot_rw(val1)          # 由从小到大排序后的val1经过MLP得到权重
+            val1, idx1 = est_val_total.sort(1)   
+            val2, idx2 = idx1.sort(1)           
+            weight = self.kshot_rw(val1)         
             idx3 = idx1.gather(1, idx2)
-            weight = weight.gather(1, idx3)       # 权重再排序
-            weight_soft = torch.softmax(weight, 1)               # weight_soft.shape:torch.Size([10, 5, 1, 1])
+            weight = weight.gather(1, idx3)      
+            weight_soft = torch.softmax(weight, 1)            
         else:
             weight_soft = torch.ones_like(est_val_total)
         est_val = (weight_soft * est_val_total).sum(1, True)  # [bs, 1, 1, 1]
@@ -606,38 +606,38 @@ class OneModel(nn.Module):
         specify_feat1 = self.init_merge1(merge_feat1)
         specify_feat2 = self.init_merge2(merge_feat2)   
            
-        query_meta1 = self.ASPP_meta(specify_feat1)                 # torch.Size([2, 640, 60, 60])
+        query_meta1 = self.ASPP_meta(specify_feat1)               
         query_mhsa = self.mhsa(specify_feat2)  
         query_meta2 = self.ASPP1(specify_feat2)
         query_meta = torch.cat([query_meta1, query_meta2, query_mhsa], dim=1)
-        query_meta = self.res1_meta(query_meta)                   # 1080->256   torch.Size([2, 256, 60, 60])
-        query_meta = self.res2_meta(query_meta) + query_meta    # torch.Size([24, 256, 60, 60])
+        query_meta = self.res1_meta(query_meta)                  
+        query_meta = self.res2_meta(query_meta) + query_meta    
 
         meta_out = self.cls_meta(query_meta) 
-        meta_out_soft = meta_out.softmax(1)               # pascal: torch.Size([bs, 2, 60, 60])
-        meta_map_bg = meta_out_soft[:,0:1,:,:]            # [bs, 1, 60, 60]
-        meta_map_fg = meta_out_soft[:,1:,:,:]             # [bs, 1, 60, 60]
+        meta_out_soft = meta_out.softmax(1)               
+        meta_map_bg = meta_out_soft[:,0:1,:,:]           
+        meta_map_fg = meta_out_soft[:,1:,:,:]            
 
 
         est_map = est_val.expand_as(meta_map_fg)
-        meta_map_bg = self.gram_merge(torch.cat([meta_map_bg,est_map], dim=1))       #torch.Size([2, 1, 81, 81])
-        meta_map_fg = self.gram_merge(torch.cat([meta_map_fg,est_map], dim=1))       #torch.Size([2, 1, 81, 81])
+        meta_map_bg = self.gram_merge(torch.cat([meta_map_bg,est_map], dim=1))       
+        meta_map_fg = self.gram_merge(torch.cat([meta_map_fg,est_map], dim=1))      
 
-        merge_map = torch.cat([meta_map_bg, base_map], 1)        # torch.Size([2, 2, 81, 81])
-        merge_bg = self.cls_merge(merge_map)                     # [bs, 1, 81, 81]
-        final_out = torch.cat([merge_bg, meta_map_fg], dim=1)    # torch.Size([4, 2, 81, 81])
+        merge_map = torch.cat([meta_map_bg, base_map], 1)       
+        merge_bg = self.cls_merge(merge_map)                     
+        final_out = torch.cat([merge_bg, meta_map_fg], dim=1)    
 
         # Output Part
         if self.zoom_factor != 1:
             meta_out = F.interpolate(meta_out, size=(h, w), mode='bilinear', align_corners=True)
             base_out = F.interpolate(base_out, size=(h, w), mode='bilinear', align_corners=True)
-            final_out = F.interpolate(final_out, size=(h, w), mode='bilinear', align_corners=True)       # # torch.Size([4, 2, 641, 641])
+            final_out = F.interpolate(final_out, size=(h, w), mode='bilinear', align_corners=True)       
 
         # loss
         if self.training:
-            main_loss = self.criterion(final_out, y_m.long())        # Query_pred & Query_GT          y_m: torch.Size([4, 641, 641])
+            main_loss = self.criterion(final_out, y_m.long())        # Query_pred & Query_GT         
             aux_loss1 = self.criterion(meta_out, y_m.long())         # Supp_seg_pred & Supp_GT
-            aux_loss2 = self.criterion(base_out, y_b.long())         # Query_seg_pred & Query_GT      y_b: torch.Size([4, 641, 641])
+            aux_loss2 = self.criterion(base_out, y_b.long())         # Query_seg_pred & Query_GT    
             return final_out.max(1)[1], main_loss, aux_loss1, aux_loss2
         else:
             return final_out, meta_out, base_out 
