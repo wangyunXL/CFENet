@@ -1,8 +1,3 @@
-r""" Extracts intermediate features from given backbone network & layer ids """
-
-
-
-r""" Extracts intermediate features from given backbone network & layer ids """
 
 
 from collections import Counter
