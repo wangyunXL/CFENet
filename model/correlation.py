@@ -30,10 +30,10 @@ def get_corr_chanfeat(query_feat, supp_feat_list, mask_list):
         corr_q_feat_list.append(corr_q_feat)
         # corr_attn_list.append(chan_corr_feat)
 
-    # corr_feat = torch.cat(corr_feat_list, dim=1)             # 空间位置加权
-    corr_q_feat = torch.cat(corr_q_feat_list, dim=1)         # 将调整后的特征相乘
+    # corr_feat = torch.cat(corr_feat_list, dim=1)       
+    corr_q_feat = torch.cat(corr_q_feat_list, dim=1)       
     # corr_q_feat = (corr_q_feat * weight_soft).sum(1, True)
-    # corr_attn_feat = torch.cat(corr_attn_list, dim=1)        # 通道加权
+    # corr_attn_feat = torch.cat(corr_attn_list, dim=1)    
 
     # return corr_feat, corr_q_feat, corr_attn_feat
     return corr_q_feat, corr_q_feat_list
@@ -64,9 +64,9 @@ def get_corr_supp(query_feat, supp_feat_list):
         corr_feat_list.append(corr_feat)
         corr_q_feat_list.append(corr_q_feat)
         corr_attn_list.append(chan_corr_feat)
-    corr_feat = torch.cat(corr_feat_list, dim=1)             # 空间位置加权
-    corr_q_feat = torch.cat(corr_q_feat_list, dim=1)         # 将调整后的特征相乘
-    corr_attn_feat = torch.cat(corr_attn_list, dim=1)        # 通道加权
+    corr_feat = torch.cat(corr_feat_list, dim=1)          
+    corr_q_feat = torch.cat(corr_q_feat_list, dim=1)        
+    corr_attn_feat = torch.cat(corr_attn_list, dim=1)       
 
     return corr_feat, corr_q_feat, corr_attn_feat
 
@@ -91,7 +91,7 @@ class Correlation:
 
 
             corr = torch.bmm(query_feat.transpose(1, 2), support_feat)
-            corr = corr.clamp(min=0)    # 取非负
+            corr = corr.clamp(min=0)   
             corr = corr.mean(dim=2,keepdim=True).squeeze(2)
             corr = corr.view(bsz, hb, wb)
             corr = corr / (torch.norm(corr, dim=2, keepdim=True)+1e-5)
@@ -106,29 +106,29 @@ class Correlation:
 #     for i, tmp_supp_feat in enumerate(supp_feat_list):
 #         resize_size = tmp_supp_feat.size(2)
     
-#         q = query_feat                                    # torch.Size([4, 2048, 60, 60])
+#         q = query_feat                            
 #         s = tmp_supp_feat
 #         bsize, ch_sz, sp_sz, _ = q.size()[:]
 
 #         tmp_query = q
-#         tmp_query = tmp_query.reshape(bsize, ch_sz, -1)          # torch.Size([4, 2048, 3600])
-#         tmp_query_norm = torch.norm(tmp_query, 2, 1, True)       # torch.Size([4, 1, 3600])
+#         tmp_query = tmp_query.reshape(bsize, ch_sz, -1)       
+#         tmp_query_norm = torch.norm(tmp_query, 2, 1, True)    
 
 #         tmp_supp = s               
-#         tmp_supp = tmp_supp.reshape(bsize, ch_sz, -1)            # torch.Size([4, 2048, 3600])
+#         tmp_supp = tmp_supp.reshape(bsize, ch_sz, -1)        
 #         tmp_supp = tmp_supp.permute(0, 2, 1)
 #         tmp_supp_norm = torch.norm(tmp_supp, 2, 2, True) 
 
-#         similarity = torch.bmm(tmp_supp, tmp_query)/(torch.bmm(tmp_supp_norm, tmp_query_norm) + cosine_eps)   # 计算余弦相似度值: torch.Size([4, 3600, 3600])
-#         similarity = similarity.max(1)[0].reshape(bsize, sp_sz*sp_sz)           # 取最大的余弦相似度值，并reshape为：(b,h*w)
-#         similarity = (similarity - similarity.min(1)[0].unsqueeze(1))/(similarity.max(1)[0].unsqueeze(1) - similarity.min(1)[0].unsqueeze(1) + cosine_eps)  # min-max归一化（归一化到(0,1)之间）
-#         corr_query = similarity.reshape(bsize, 1, sp_sz, sp_sz)         # 生成先验掩码图
-#         corr_query_mask_list.append(corr_query)                      #  pascal:    corr_query:（bsize, 1, 60, 60）
+#         similarity = torch.bmm(tmp_supp, tmp_query)/(torch.bmm(tmp_supp_norm, tmp_query_norm) + cosine_eps)   
+#         similarity = similarity.max(1)[0].reshape(bsize, sp_sz*sp_sz)        
+#         similarity = (similarity - similarity.min(1)[0].unsqueeze(1))/(similarity.max(1)[0].unsqueeze(1) - similarity.min(1)[0].unsqueeze(1) + cosine_eps)  
+#         corr_query = similarity.reshape(bsize, 1, sp_sz, sp_sz)     
+#         corr_query_mask_list.append(corr_query)                   
 
     
 
 
-#     corr_query_mask = torch.cat(corr_query_mask_list, 1)             #  pascal:    corr_query:（bsize, shot, 60, 60）
+#     corr_query_mask = torch.cat(corr_query_mask_list, 1)        
 
 #     return corr_query_mask
 
@@ -148,13 +148,13 @@ class Correlation:
 # def feat_PCM(self, masked_feat, query_feat):
 #     n,c,h,w = query_feat.shape
 #     masked_feat_flatten = masked_feat.reshape(n,c,h*w)
-#     query_feat_flatten = query_feat.reshape(n,c,h*w)              # query_feat_flatten:torch.Size([24, 256, 3600])
+#     query_feat_flatten = query_feat.reshape(n,c,h*w)          
 #     masked_feat_flatten = masked_feat_flatten / (torch.norm(masked_feat_flatten, dim=2, keepdim=True)+1e-5)
 #     masked_flatten = masked_feat_flatten.permute(0,2,1)
 
 #     # aff = F.relu(torch.matmul(query_flatten, masked_feat_flatten))
 #     aff = F.relu(torch.matmul(masked_feat_flatten, masked_flatten))
-#     aff = aff / (torch.sum(aff, dim=1, keepdim=True) + 1e-5)      # aff.shape:torch.Size([24, 256, 256])
+#     aff = aff / (torch.sum(aff, dim=1, keepdim=True) + 1e-5)    
 #     # print("query_feat_flatten:{}, aff.shape:{}".format(query_feat_flatten.shape, aff.shape))
 #     new_feat = torch.matmul(aff, query_feat_flatten)
 
@@ -168,25 +168,25 @@ class Correlation:
 #     cosine_eps = 1e-7
 #     for i, tmp_supp_feat in enumerate(supp_feat_list):
         
-#         q = query_feat                                    # torch.Size([4, 2048, 60, 60])
+#         q = query_feat                              
 #         s = tmp_supp_feat
 #         bsize, ch_sz, sp_sz, _ = q.size()[:]
 
 #         tmp_supp = s               
-#         tmp_supp = tmp_supp.reshape(bsize, ch_sz, -1)            # torch.Size([4, 2048, 3600])
+#         tmp_supp = tmp_supp.reshape(bsize, ch_sz, -1)        
 #         tmp_supp_norm = torch.norm(tmp_supp, 2, 1, True) 
 
 #         tmp_query = q
-#         tmp_query = tmp_query.reshape(bsize, ch_sz, -1)          # torch.Size([4, 2048, 3600])
+#         tmp_query = tmp_query.reshape(bsize, ch_sz, -1)    
 #         tmp_query = tmp_query.permute(0, 2, 1)
 #         tmp_query_norm = torch.norm(tmp_query, 2, 2, True) 
         
 
-#         similarity = torch.bmm(tmp_query, tmp_supp)/(torch.bmm(tmp_query_norm, tmp_supp_norm) + cosine_eps)   # 计算余弦相似度值: torch.Size([4, 3600, 3600])
-#         similarity = similarity.max(1)[0].reshape(bsize, sp_sz*sp_sz)           # 取最大的余弦相似度值，并reshape为：(b,h*w)
-#         similarity = (similarity - similarity.min(1)[0].unsqueeze(1))/(similarity.max(1)[0].unsqueeze(1) - similarity.min(1)[0].unsqueeze(1) + cosine_eps)  # min-max归一化（归一化到(0,1)之间）
-#         corr_query = similarity.reshape(bsize, 1, sp_sz, sp_sz)         # 生成先验掩码图
-#         corr_supp_mask_list.append(corr_query)                      #  pascal:    corr_query:（bsize, 1, 60, 60）
+#         similarity = torch.bmm(tmp_query, tmp_supp)/(torch.bmm(tmp_query_norm, tmp_supp_norm) + cosine_eps)  
+#         similarity = similarity.max(1)[0].reshape(bsize, sp_sz*sp_sz)         
+#         similarity = (similarity - similarity.min(1)[0].unsqueeze(1))/(similarity.max(1)[0].unsqueeze(1) - similarity.min(1)[0].unsqueeze(1) + cosine_eps) 
+#         corr_query = similarity.reshape(bsize, 1, sp_sz, sp_sz)      
+#         corr_supp_mask_list.append(corr_query)                   
 
 #     return corr_supp_mask_list
 
