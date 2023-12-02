@@ -38,7 +38,6 @@ class ASPP(nn.Module):
                 m.bias.data.zero_()
                 
     def forward(self, x):
-        """不同空洞率卷积结果连结，再加上全局池化得到的结果。 空洞卷积之间并行连结"""
         feature_size = x.shape[-2:]
         global_feature = F.avg_pool2d(x, kernel_size=feature_size)
 
