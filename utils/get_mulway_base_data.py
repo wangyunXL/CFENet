@@ -5,29 +5,6 @@ import os.path as osp
 from tqdm import tqdm
 from util import get_train_val_set, check_makedirs
 
-# Get the annotations of base categories
-
-# root_path
-# ├── BAM/
-# │   ├── util/
-# │   ├── config/
-# │   ├── model/
-# │   ├── README.md
-# │   ├── train.py
-# │   ├── train_base.py
-# │   └── test.py
-# └── data/
-#     ├── base_annotation/   # the scripts to create THIS folder
-#     │   ├── pascal/
-#     │   │   ├── train/
-#     │   │   │   ├── 0/     # annotations of PASCAL-5^0
-#     │   │   │   ├── 1/
-#     │   │   │   ├── 2/
-#     │   │   │   └── 3/
-#     │   │   └── val/
-#     │   └── coco/          # the same file structure for COCO
-#     ├── VOCdevkit2012/
-#     └── MSCOCO2014/
 
 parser = argparse.ArgumentParser()
 args = parser.parse_args()
