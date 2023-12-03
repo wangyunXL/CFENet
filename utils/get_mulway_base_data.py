@@ -18,7 +18,7 @@ if args.data_set == 'pascal':
 elif args.data_set == 'coco':
     num_classes = 80
 
-root_path = r"../CFENet/"
+root_path = " "
 data_path = osp.join(root_path, 'data/base_annotation/')
 save_path = osp.join(data_path, args.data_set, args.mode, str(args.split))
 check_makedirs(save_path)
