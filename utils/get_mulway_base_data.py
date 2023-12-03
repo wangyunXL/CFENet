@@ -50,7 +50,7 @@ check_makedirs(save_path)
 sub_list, sub_val_list = get_train_val_set(args)
 
 # get data_list
-fss_list_root = root_path + '../CFENet/lists/{}/fss_list/{}/'.format(args.data_set, args.mode)
+fss_list_root = root_path + '../lists/{}/fss_list/{}/'.format(args.data_set, args.mode)
 fss_data_list_path = fss_list_root + 'data_list_{}.txt'.format(args.split)
 with open(fss_data_list_path, 'r') as f:
     f_str = f.readlines()
