@@ -66,11 +66,12 @@ If you find our project is helpful, please feel free to leave a star and cite ou
 @ARTICLE{10336516,
   author={Wang, Yun and Zhu, Lu and Liu, Yuanyuan},
   journal={IEEE Transactions on Multimedia}, 
-  title={CFENet: Boosting Few-Shot Semantic Segmentation with Complementary Feature-Enhanced Network}, 
-  year={2023},
-  volume={},
+  title={CFENet: Boosting Few-Shot Semantic Segmentation With Complementary Feature-Enhanced Network}, 
+  year={2024},
+  volume={26},
   number={},
-  pages={1-12},
+  pages={5630-5640},
+  keywords={Feature extraction;Prototypes;Semantic segmentation;Data mining;Task analysis;Correlation;Transformers;Few-shot learning;semantic segmentation;few-shot semantic segmentation},
   doi={10.1109/TMM.2023.3338088}}
 ```
 
